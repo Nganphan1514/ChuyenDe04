@@ -1,0 +1,24 @@
+# Computer Vision & AI Edge Core
+opencv-python>=4.9.0.80
+mediapipe>=0.10.14
+numpy>=1.26.0,<2.0.0
+scikit-learn>=1.4.0
+scipy>=1.12.0
+
+# Audio & Text-to-Speech
+pygame>=2.5.2
+pyttsx3>=2.90
+gTTS>=2.5.1
+
+# Location & Geocoding
+geopy>=2.4.1
+requests>=2.31.0
+
+# Backend & API (FastAPI modern async stack)
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+python-multipart>=0.0.9
+
+# Utility & Configuration
+python-dotenv>=1.0.1
