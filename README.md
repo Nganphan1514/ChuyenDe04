@@ -45,6 +45,18 @@ Toàn bộ tiến trình làm việc có sự hỗ trợ của AI, các Review G
 * [docs/product-requirements.md](chapter-03-ai-for-requirements-product-analysis/docs/product-requirements.md): **PRD đã phê duyệt** (Goal, FR-01 đến FR-08, Non-goals, Acceptance signals).
 * [docs/feature-specification.md](chapter-03-ai-for-requirements-product-analysis/docs/feature-specification.md): **Feature Specification đã phê duyệt** (Lifecycle chi tiết của Calibration, Detection, Audio Escalation, Rest Stop và Fail-Safe).
 
+### 4. [Chapter 4 — AI for Product Design](chapter-04-ai-for-product-design/GUIDELINE.md)
+* [GUIDELINE.md](chapter-04-ai-for-product-design/GUIDELINE.md): Hướng dẫn & tiêu chí đánh giá thiết kế UX/UI buồng lái và đội xe.
+* [prompts/create-user-flow.prompt.md](chapter-04-ai-for-product-design/prompts/create-user-flow.prompt.md): Prompt `P4.1` thiết kế User Flows.
+* [prompts/create-wireframe.prompt.md](chapter-04-ai-for-product-design/prompts/create-wireframe.prompt.md): Prompt `P4.2` thiết kế Wireframes.
+* [prompts/create-prototype.prompt.md](chapter-04-ai-for-product-design/prompts/create-prototype.prompt.md): Prompt `P4.3` tạo Interactive Prototype.
+* [prompts/review-design.prompt.md](chapter-04-ai-for-product-design/prompts/review-design.prompt.md): Prompt `P4.4` AI Design Review.
+* [docs/user-flows.md](chapter-04-ai-for-product-design/docs/user-flows.md): **User Flows đã phê duyệt** (Sơ đồ Mermaid 5 luồng hoạt động).
+* [docs/wireframes.md](chapter-04-ai-for-product-design/docs/wireframes.md): **Wireframes đã phê duyệt** (ASCII Wireframes Cabin HUD & Fleet Web).
+* [docs/product-design.md](chapter-04-ai-for-product-design/docs/product-design.md): **Master Product Design** (Design System tokens, Night-mode Ergonomics, Audio Cues).
+* [docs/design-review.md](chapter-04-ai-for-product-design/docs/design-review.md): **AI Design Review Report** (Thẩm định công thái học, độ trễ và giảm tải nhận thức).
+* [prototype/index.html](chapter-04-ai-for-product-design/prototype/index.html): **Bản mẫu tương tác chạy thực tế (Interactive Prototype)**.
+
 ---
 
 ## 🏛️ Kiến trúc hệ thống phân tầng (Edge-to-Fleet Architecture)

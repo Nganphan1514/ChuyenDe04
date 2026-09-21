@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SleepAlert - Interactive UX/UI Prototype (Chapter 04)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes redPulse {
+      0%, 100% { background-color: rgba(239, 68, 68, 0.25); border-color: #ef4444; }
+      50% { background-color: rgba(239, 68, 68, 0.7); border-color: #f87171; box-shadow: 0 0 40px #ef4444; }
+    }
+    .animate-danger-strobe {
+      animation: redPulse 0.4s infinite ease-in-out;
+    }
+    @keyframes amberGlow {
+      0%, 100% { border-color: #f59e0b; }
+      50% { border-color: #fbbf24; box-shadow: 0 0 25px rgba(245, 158, 11, 0.5); }
+    }
+    .animate-amber-glow {
+      animation: amberGlow 1.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-[#0B0F19] text-slate-100 font-sans min-h-screen antialiased flex flex-col">
+
+  <!-- TOP APP BAR / NAVIGATION -->
+  <header class="bg-[#111827] border-b border-slate-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-lg">
+        🛡️
+      </div>
+      <div>
+        <h1 class="font-bold text-lg text-white flex items-center gap-2">
+          SleepAlert <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-700/50 px-2 py-0.5 rounded-full font-mono">Chương 4: UX/UI Prototype</span>
+        </h1>
+        <p class="text-xs text-slate-400">Hệ thống Giám sát & Cảnh báo Buồn ngủ cho Tài xế</p>
+      </div>
+    </div>
+
+    <!-- WORKSPACE TABS -->
+    <div class="flex bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+      <button id="tabBtnCabin" onclick="switchTab('cabin')" class="px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-emerald-600 text-white shadow-sm flex items-center gap-2">
+        <span>🚘</span> Màn hình Buồng lái (HUD)
+      </button>
+      <button id="tabBtnFleet" onclick="switchTab('fleet')" class="px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white flex items-center gap-2">
+        <span>🚛</span> Quản lý Đội xe (Fleet Portal)
+      </button>
+    </div>
+
+    <!-- AUDIO TOGGLE & SYSTEM STATUS -->
+    <div class="flex items-center space-x-3">
+      <button id="btnAudioToggle" onclick="toggleAudio()" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 flex items-center gap-1.5">
+        <span id="audioIcon">🔊</span> <span id="audioStatus">Âm thanh: Bật</span>
+      </button>
+      <span class="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-800/40">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Edge AI: 30 FPS
+      </span>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="flex-1 p-6 max-w-7xl mx-auto w-full">
+
+    <!-- ================================================================= -->
+    <!-- VIEW 1: IN-CABIN DRIVER HUD                                       -->
+    <!-- ================================================================= -->
+    <div id="viewCabin" class="space-y-6">
+      
+      <!-- CONTROLLER PANEL (MÔ PHỎNG TRẠNG THÁI CHO BÀI THỰC HÀNH 4) -->
+      <div class="bg-[#161F30] border border-slate-700/80 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400 text-sm">🎛️</span>
+            <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider">Bảng Điều Khiển Mô Phỏng Trạng Thái (Simulation Sandbox)</h2>
+          </div>
+          <span class="text-xs text-slate-400">Chọn tình huống để kiểm tra phản hồi UX/UI thời gian thực:</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+          <button onclick="simulateState('normal')" class="sim-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-emerald-500/50 text-xs text-emerald-300 font-semibold flex flex-col items-center gap-1 transition">
+            <span class="text-base">🟢</span> Tỉnh táo (Normal)
+          </button>
+          <button onclick="simulateState('yawn')" class="sim-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-amber-500/50 text-xs text-amber-300 font-semibold flex flex-col items-center gap-1 transition">
+            <span class="text-base">🥱</span> Ngáp (Yawn)
+          </button>
+          <button onclick="simulateState('fatigue')" class="sim-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-orange-500/50 text-xs text-orange-300 font-semibold flex flex-col items-center gap-1 transition">
+            <span class="text-base">⚠️</span> Mệt mỏi (L1 Warn)
+          </button>
+          <button onclick="simulateState('microsleep')" class="sim-btn px-3 py-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500 text-xs text-red-300 font-bold flex flex-col items-center gap-1 transition">
+            <span class="text-base">🚨</span> Ngủ gật (L2 Critical)
+          </button>
+          <button onclick="simulateState('headdown')" class="sim-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-purple-500/50 text-xs text-purple-300 font-semibold flex flex-col items-center gap-1 transition">
+            <span class="text-base">🙇‍♂️</span> Gục đầu (L3 Pose)
+          </button>
+          <button onclick="simulateState('facelost')" class="sim-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs text-slate-300 font-semibold flex flex-col items-center gap-1 transition">
+            <span class="text-base">👤❌</span> Mất mặt (Face Lost)
+          </button>
+        </div>
+      </div>
+
+      <!-- IN-CABIN HUD CONTAINER -->
+      <div id="hudContainer" class="bg-[#0D1322] border-2 border-emerald-500/40 rounded-3xl p-6 shadow-2xl transition-all duration-300 relative overflow-hidden">
+        
+        <!-- TOP HUD INFO BAR -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+          <div class="flex items-center space-x-4">
+            <div class="bg-slate-800/80 px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs font-mono text-slate-300">
+              XE: <span class="text-emerald-400 font-bold">VN-43A-9999</span>
+            </div>
+            <div class="bg-slate-800/80 px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs font-mono text-slate-300">
+              TÀI XẾ: <span class="text-slate-100 font-semibold">Trần Văn Hùng</span>
+            </div>
+            <div class="bg-slate-800/80 px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs font-mono text-slate-300">
+              CA LÁI: <span id="drivingTimer" class="text-amber-400 font-bold">02:45:18</span>
+            </div>
+          </div>
+
+          <!-- SYSTEM STATE BADGE -->
+          <div id="systemStateBadge" class="px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-950 text-emerald-400 border border-emerald-700/60 flex items-center gap-2 shadow-sm">
+            <span id="stateDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="stateText">TRẠNG THÁI: TỈNH TÁO</span>
+          </div>
+        </div>
+
+        <!-- MAIN HUD GRID: VISION FOCUS + METRICS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <!-- LEFT: SIMULATED FACIAL LANDMARK VISION CANVASES (5 Cols) -->
+          <div class="lg:col-span-5 flex flex-col items-center justify-center">
+            <div class="relative w-full max-w-[340px] aspect-[4/3] bg-black/60 rounded-2xl border border-slate-700/80 overflow-hidden flex items-center justify-center p-2 shadow-inner">
+              <canvas id="faceCanvas" width="320" height="240" class="w-full h-full rounded-xl"></canvas>
+              
+              <!-- Calibration overlay -->
+              <div id="calibrationOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 hidden">
+                <div class="w-12 h-12 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin mb-3"></div>
+                <div class="text-sm font-bold text-emerald-400 mb-1">ĐANG HIỆU CHUẨN MẮT (3.0s)</div>
+                <p class="text-xs text-slate-300 text-center">Vui lòng nhìn thẳng tự nhiên vào kính lái...</p>
+              </div>
+
+              <!-- Night mode IR tag -->
+              <div class="absolute top-3 left-3 bg-black/70 border border-slate-700 text-[10px] text-slate-300 px-2 py-0.5 rounded-md font-mono flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> IR CAMERA ACTIVE
+              </div>
+            </div>
+            <div class="mt-2.5 text-xs text-slate-400 flex items-center gap-2">
+              <span class="text-emerald-400">●</span> 468 Điểm Mốc Khuôn Mặt (MediaPipe Face Mesh)
+            </div>
+          </div>
+
+          <!-- RIGHT: BIG NUMERIC SAFETY GAUGES (7 Cols) -->
+          <div class="lg:col-span-7 space-y-4">
+            
+            <!-- GAUGE 1: EAR (EYE OPENNESS) -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+              <div class="flex justify-between items-baseline mb-2">
+                <span class="text-xs font-bold text-slate-400 tracking-wider">TỈ LỆ MỞ MẮT (EAR - EYE ASPECT RATIO)</span>
+                <span class="text-xs font-mono text-slate-400">Ngưỡng nhắm: <span class="text-amber-400 font-semibold" id="earThreshVal">0.22</span></span>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="text-4xl font-extrabold font-mono text-white" id="earDisplay">0.32</div>
+                <div class="flex-1">
+                  <div class="w-full bg-slate-800 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                    <div id="earBar" class="bg-emerald-500 h-full rounded-full transition-all duration-150" style="width: 80%;"></div>
+                  </div>
+                  <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+                    <span>0.00 (Nhắm tịt)</span>
+                    <span class="text-amber-500">| Ngưỡng 0.22</span>
+                    <span>0.40 (Mở to)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GAUGE 2: PERCLOS (MỆT MỎI TÍCH LŨY TRONG 300 FRAMES) -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+              <div class="flex justify-between items-baseline mb-2">
+                <span class="text-xs font-bold text-slate-400 tracking-wider">CHỈ SỐ PERCLOS (TỶ LỆ NHẮM MẮT 300 FRAMES)</span>
+                <span class="text-xs font-mono text-slate-400">Nguy cấp: <span class="text-red-400 font-semibold">&ge; 25%</span></span>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="text-4xl font-extrabold font-mono text-white" id="perclosDisplay">4.2<span class="text-lg font-normal text-slate-400">%</span></div>
+                <div class="flex-1">
+                  <div class="w-full bg-slate-800 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                    <div id="perclosBar" class="bg-emerald-500 h-full rounded-full transition-all duration-150" style="width: 8%;"></div>
+                  </div>
+                  <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+                    <span>0% (Tỉnh táo)</span>
+                    <span class="text-amber-500">15% (Cảnh báo L1)</span>
+                    <span class="text-red-500">25% (Nguy cấp L2)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GAUGE 3: HEAD POSE (PITCH) & MAR -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3">
+                <span class="text-[11px] font-bold text-slate-400 block mb-1">GÓC CÚI ĐẦU (PITCH)</span>
+                <div class="text-2xl font-bold font-mono text-white" id="pitchDisplay">-2.5°</div>
+                <span class="text-[10px] text-slate-500 font-mono">Ngưỡng gục: &lt; -20.0°</span>
+              </div>
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3">
+                <span class="text-[11px] font-bold text-slate-400 block mb-1">ĐỘ MỞ MIỆNG (MAR)</span>
+                <div class="text-2xl font-bold font-mono text-white" id="marDisplay">0.24</div>
+                <span class="text-[10px] text-slate-500 font-mono">Ngưỡng ngáp: &gt; 0.60</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- BOTTOM HUD: SMART NOTIFICATION BANNER -->
+        <div id="restStopBanner" class="mt-6 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-700 flex items-center justify-between text-sm transition-all duration-300">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">⛽</span>
+            <div>
+              <span class="font-bold text-amber-300">Gợi ý an toàn:</span>
+              <span class="text-slate-300 ml-1" id="restStopText">Trạm dừng chân Mai Linh cách 3.2 km phía trước (QL1A)</span>
+            </div>
+          </div>
+          <button onclick="dismissBanner()" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Bỏ qua</button>
+        </div>
+
+        <!-- EMERGENCY OVERLAY BANNER (CHỈ HIỆN KHI NGỦ GẬT) -->
+        <div id="emergencyOverlay" class="absolute inset-0 bg-red-950/90 border-4 border-red-600 flex flex-col items-center justify-center p-8 text-center hidden animate-danger-strobe z-40">
+          <div class="text-6xl mb-3">🚨</div>
+          <h3 class="text-3xl font-black text-white tracking-widest uppercase mb-2">NGUY HIỂM! BÁO ĐỘNG NGỦ GẬT!</h3>
+          <p class="text-xl font-bold text-red-200 mb-4">TÀI XẾ ĐÃ NHẮM MẮT QUÁ 1.5 GIÂY - MỞ MẮT NGAY LẬP TỨC!</p>
+          <div class="bg-black/60 border border-red-500/50 px-6 py-2.5 rounded-full font-mono text-sm text-red-300 flex items-center gap-2">
+            <span>🔊 CÒI HÚ KHẨN CẤP ĐANG KÍCH HOẠT</span> &bull; <span>📸 ĐÃ CHỤP ẢNH SNAPSHOT</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 2: CENTRAL FLEET SAFETY WEB DASHBOARD                        -->
+    <!-- ================================================================= -->
+    <div id="viewFleet" class="space-y-6 hidden">
+      
+      <!-- FLEET STATS CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-[#161F30] border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase">Xe Đang Lưu Thông</span>
+          <div class="text-3xl font-extrabold text-white mt-1">28 <span class="text-sm font-normal text-slate-400">/ 30 đầu xe</span></div>
+          <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1">
+            <span>●</span> 26 xe trạng thái an toàn
+          </div>
+        </div>
+        
+        <div class="bg-[#161F30] border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase">Cảnh Báo Hôm Nay</span>
+          <div class="text-3xl font-extrabold text-amber-400 mt-1" id="statWarnCount">14</div>
+          <div class="mt-2 text-xs text-slate-400">12 nhắc nhở mệt mỏi sớm</div>
+        </div>
+
+        <div class="bg-[#161F30] border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase">Sự Kiện Ngủ Gật Đỏ</span>
+          <div class="text-3xl font-extrabold text-red-400 mt-1" id="statCritCount">02</div>
+          <div class="mt-2 text-xs text-red-400 flex items-center gap-1">
+            <span>🚨</span> Đã kích hoạt còi hú & lưu ảnh
+          </div>
+        </div>
+
+        <div class="bg-[#161F30] border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase">Chỉ Số An Toàn Đội Xe</span>
+          <div class="text-3xl font-extrabold text-emerald-400 mt-1">96.4%</div>
+          <div class="mt-2 text-xs text-emerald-400">Đạt chuẩn an toàn vận tải</div>
+        </div>
+      </div>
+
+      <!-- FLEET TABLE WITH LIVE DATA -->
+      <div class="bg-[#161F30] border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-base text-white">Danh Sách Xe Đang Giám Sát Thời Gian Thực</h3>
+            <p class="text-xs text-slate-400">Dữ liệu được cập nhật liên tục từ thiết bị Edge AI trên từng cabin xe</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" placeholder="Tìm biển số hoặc tài xế..." class="bg-slate-900 border border-slate-700 text-xs text-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500">
+            <button class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Xuất Báo Cáo</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/80 text-slate-400 uppercase font-mono border-b border-slate-800">
+              <tr>
+                <th class="p-3.5">Biển số</th>
+                <th class="p-3.5">Tài xế</th>
+                <th class="p-3.5">Tuyến đường</th>
+                <th class="p-3.5">Trạng thái</th>
+                <th class="p-3.5">EAR / PERCLOS</th>
+                <th class="p-3.5">Vị trí GPS</th>
+                <th class="p-3.5 text-right">Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="fleetTableBody" class="divide-y divide-slate-800 font-sans">
+              <!-- Row 1 (This Vehicle) -->
+              <tr class="bg-slate-900/40 hover:bg-slate-800/40 transition">
+                <td class="p-3.5 font-bold text-white font-mono flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span> VN-43A-9999
+                </td>
+                <td class="p-3.5 font-semibold text-slate-200">Trần Văn Hùng</td>
+                <td class="p-3.5 text-slate-400">Đà Nẵng &rarr; Hà Nội (QL1A)</td>
+                <td class="p-3.5" id="tblStatusCell"><span class="px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold text-[11px]">Tỉnh táo</span></td>
+                <td class="p-3.5 font-mono" id="tblMetricsCell">0.32 / 4.2%</td>
+                <td class="p-3.5 font-mono text-slate-400">16.0544, 108.2022</td>
+                <td class="p-3.5 text-right">
+                  <button onclick="showSnapshotModal('VN-43A-9999', 'Trần Văn Hùng', 'Bình thường', 0.32, 4.2)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">Xem Chi Tiết</button>
+                </td>
+              </tr>
+              <!-- Row 2 -->
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="p-3.5 font-bold text-white font-mono flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span> VN-43B-5678
+                </td>
+                <td class="p-3.5 font-semibold text-slate-200">Nguyễn Văn An</td>
+                <td class="p-3.5 text-slate-400">Quảng Nam &rarr; Đà Nẵng</td>
+                <td class="p-3.5"><span class="px-2.5 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-800 font-semibold text-[11px]">Mệt mỏi (Ngáp)</span></td>
+                <td class="p-3.5 font-mono text-amber-300">0.26 / 18.5%</td>
+                <td class="p-3.5 font-mono text-slate-400">15.5890, 108.4800</td>
+                <td class="p-3.5 text-right">
+                  <button onclick="showSnapshotModal('VN-43B-5678', 'Nguyễn Văn An', 'Ngáp nhiều', 0.26, 18.5)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">Xem Chi Tiết</button>
+                </td>
+              </tr>
+              <!-- Row 3 (Violated) -->
+              <tr class="bg-red-950/20 hover:bg-red-950/30 transition">
+                <td class="p-3.5 font-bold text-white font-mono flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> VN-92A-8888
+                </td>
+                <td class="p-3.5 font-semibold text-red-200">Lê Quốc Huy</td>
+                <td class="p-3.5 text-slate-400">Huế &rarr; Quảng Trị</td>
+                <td class="p-3.5"><span class="px-2.5 py-1 rounded-full bg-red-950 text-red-400 border border-red-800 font-bold text-[11px]">BÁO ĐỘNG NGỦ GẬT</span></td>
+                <td class="p-3.5 font-mono text-red-400 font-bold">0.08 / 28.5%</td>
+                <td class="p-3.5 font-mono text-slate-400">16.4637, 107.5908</td>
+                <td class="p-3.5 text-right">
+                  <button onclick="showSnapshotModal('VN-92A-8888', 'Lê Quốc Huy', 'Ngủ gật 1.8s', 0.08, 28.5)" class="px-2.5 py-1 rounded bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-700 font-bold">Xem Snapshot 📸</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INCIDENT SNAPSHOT MODAL -->
+      <div id="snapshotModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-[#161F30] border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h4 class="font-bold text-lg text-white flex items-center gap-2">
+              <span>📸</span> Bằng Chứng Sự Kiện Vi Phạm
+            </h4>
+            <button onclick="closeSnapshotModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+          </div>
+          
+          <!-- Mock snapshot image container -->
+          <div class="relative aspect-video bg-black rounded-xl border border-slate-700 flex items-center justify-center overflow-hidden">
+            <!-- Stylized IR snapshot canvas -->
+            <canvas id="modalCanvas" width="360" height="240" class="w-full h-full"></canvas>
+            <div class="absolute bottom-2 left-2 bg-black/80 px-2 py-1 rounded text-[10px] font-mono text-red-400 border border-red-900/60">
+              TAMPER-PROOF SNAPSHOT &bull; TIME: 02:41:15 AM
+            </div>
+          </div>
+
+          <!-- Event metadata -->
+          <div class="grid grid-cols-2 gap-3 text-xs bg-slate-900/70 p-3 rounded-xl border border-slate-800">
+            <div><span class="text-slate-500">Biển số:</span> <span id="mPlate" class="font-bold text-white font-mono">VN-92A-8888</span></div>
+            <div><span class="text-slate-500">Tài xế:</span> <span id="mDriver" class="font-bold text-slate-200">Lê Quốc Huy</span></div>
+            <div><span class="text-slate-500">Chỉ số EAR:</span> <span id="mEar" class="font-mono text-red-400 font-bold">0.08</span></div>
+            <div><span class="text-slate-500">PERCLOS:</span> <span id="mPerclos" class="font-mono text-red-400 font-bold">28.5%</span></div>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button onclick="alert('Đã gửi thông báo cảnh báo khẩn cấp tới phụ xe và điều vận!')" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold">Gửi Cảnh Báo Phụ Xe</button>
+            <button onclick="closeSnapshotModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">Đóng</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- JAVASCRIPT SIMULATION LOGIC & WEB AUDIO API -->
+  <script>
+    // State Variables
+    let currentState = 'normal';
+    let ear = 0.32;
+    let perclos = 4.2;
+    let pitch = -2.5;
+    let mar = 0.24;
+    let audioEnabled = true;
+    let audioCtx = null;
+    let sirenOsc = null;
+
+    // Canvas Contexts
+    const faceCanvas = document.getElementById('faceCanvas');
+    const ctx = faceCanvas.getContext('2d');
+    const modalCanvas = document.getElementById('modalCanvas');
+    const mCtx = modalCanvas.getContext('2d');
+
+    // Web Audio Engine
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playBeep(freq, type, duration) {
+      if (!audioEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    function startSiren() {
+      if (!audioEnabled || sirenOsc) return;
+      initAudio();
+      try {
+        sirenOsc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        sirenOsc.type = 'sawtooth';
+        sirenOsc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        sirenOsc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        sirenOsc.connect(gain);
+        gain.connect(audioCtx.destination);
+        sirenOsc.start();
+      } catch (e) {}
+    }
+
+    function stopSiren() {
+      if (sirenOsc) {
+        try {
+          sirenOsc.stop();
+          sirenOsc.disconnect();
+        } catch (e) {}
+        sirenOsc = null;
+      }
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('audioIcon').innerText = audioEnabled ? '🔊' : '🔇';
+      document.getElementById('audioStatus').innerText = audioEnabled ? 'Âm thanh: Bật' : 'Âm thanh: Tắt';
+      if (!audioEnabled) stopSiren();
+    }
+
+    // Switch between Cabin HUD and Fleet Portal
+    function switchTab(tab) {
+      const vCabin = document.getElementById('viewCabin');
+      const vFleet = document.getElementById('viewFleet');
+      const btnCabin = document.getElementById('tabBtnCabin');
+      const btnFleet = document.getElementById('tabBtnFleet');
+
+      if (tab === 'cabin') {
+        vCabin.classList.remove('hidden');
+        vFleet.classList.add('hidden');
+        btnCabin.className = 'px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-emerald-600 text-white shadow-sm flex items-center gap-2';
+        btnFleet.className = 'px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white flex items-center gap-2';
+      } else {
+        vCabin.classList.add('hidden');
+        vFleet.classList.remove('hidden');
+        btnFleet.className = 'px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-emerald-600 text-white shadow-sm flex items-center gap-2';
+        btnCabin.className = 'px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white flex items-center gap-2';
+      }
+    }
+
+    // State Simulation Engine
+    function simulateState(state) {
+      currentState = state;
+      stopSiren();
+
+      const hud = document.getElementById('hudContainer');
+      const badge = document.getElementById('systemStateBadge');
+      const stateText = document.getElementById('stateText');
+      const stateDot = document.getElementById('stateDot');
+      const emergency = document.getElementById('emergencyOverlay');
+      const calOverlay = document.getElementById('calibrationOverlay');
+
+      // Reset styles
+      hud.className = 'bg-[#0D1322] border-2 rounded-3xl p-6 shadow-2xl transition-all duration-300 relative overflow-hidden ';
+      emergency.classList.add('hidden');
+      calOverlay.classList.add('hidden');
+
+      if (state === 'normal') {
+        ear = 0.32; perclos = 4.2; pitch = -2.5; mar = 0.22;
+        hud.classList.add('border-emerald-500/40');
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-950 text-emerald-400 border border-emerald-700/60 flex items-center gap-2';
+        stateText.innerText = 'TRẠNG THÁI: TỈNH TÁO';
+        stateDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+        playBeep(440, 'sine', 0.15);
+      } else if (state === 'yawn') {
+        ear = 0.28; perclos = 7.5; pitch = -4.0; mar = 0.72;
+        hud.classList.add('border-amber-500/60', 'animate-amber-glow');
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-950 text-amber-400 border border-amber-700 flex items-center gap-2';
+        stateText.innerText = 'CẢNH BÁO: NGÁP LIÊN TỤC';
+        stateDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+        playBeep(520, 'triangle', 0.25);
+      } else if (state === 'fatigue') {
+        ear = 0.23; perclos = 18.5; pitch = -11.0; mar = 0.45;
+        hud.classList.add('border-orange-500/70', 'animate-amber-glow');
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-orange-950 text-orange-400 border border-orange-700 flex items-center gap-2';
+        stateText.innerText = 'CẢNH BÁO CẤP 1: MỆT MỎI TÍCH LŨY';
+        stateDot.className = 'w-2.5 h-2.5 rounded-full bg-orange-400 animate-ping';
+        playBeep(480, 'sawtooth', 0.35);
+      } else if (state === 'microsleep') {
+        ear = 0.05; perclos = 32.0; pitch = -18.0; mar = 0.20;
+        hud.classList.add('border-red-600');
+        emergency.classList.remove('hidden');
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-red-950 text-red-400 border border-red-600 flex items-center gap-2';
+        stateText.innerText = '🚨 BÁO ĐỘNG ĐỎ: NGỦ GẬT!';
+        stateDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500 animate-ping';
+        startSiren();
+        updateFleetOnCritical();
+      } else if (state === 'headdown') {
+        ear = 0.24; perclos = 12.0; pitch = -26.5; mar = 0.18;
+        hud.classList.add('border-purple-500/60');
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-purple-950 text-purple-300 border border-purple-700 flex items-center gap-2';
+        stateText.innerText = 'CẢNH BÁO CẤP 3: GỤC ĐẦU (PITCH < -20°)';
+        stateDot.className = 'w-2.5 h-2.5 rounded-full bg-purple-400 animate-ping';
+        playBeep(350, 'sawtooth', 0.3);
+      } else if (state === 'facelost') {
+        ear = 0.0; perclos = 0.0; pitch = 0.0; mar = 0.0;
+        hud.classList.add('border-slate-600');
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-800 text-slate-400 border border-slate-600 flex items-center gap-2';
+        stateText.innerText = 'KHÔNG TÌM THẤY KHUÔN MẶT';
+        stateDot.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+        playBeep(300, 'sine', 0.2);
+      }
+
+      updateGauges();
+      drawFace();
+    }
+
+    function updateGauges() {
+      document.getElementById('earDisplay').innerText = ear.toFixed(2);
+      document.getElementById('perclosDisplay').innerHTML = perclos.toFixed(1) + '<span class="text-lg font-normal text-slate-400">%</span>';
+      document.getElementById('pitchDisplay').innerText = pitch.toFixed(1) + '°';
+      document.getElementById('marDisplay').innerText = mar.toFixed(2);
+
+      // Bar percentages
+      const earPct = Math.min(100, Math.max(0, (ear / 0.40) * 100));
+      const perclosPct = Math.min(100, Math.max(0, (perclos / 35.0) * 100));
+      
+      const earBar = document.getElementById('earBar');
+      earBar.style.width = earPct + '%';
+      earBar.className = ear < 0.22 ? 'bg-red-500 h-full rounded-full' : (ear < 0.26 ? 'bg-amber-500 h-full rounded-full' : 'bg-emerald-500 h-full rounded-full');
+
+      const perclosBar = document.getElementById('perclosBar');
+      perclosBar.style.width = perclosPct + '%';
+      perclosBar.className = perclos >= 25 ? 'bg-red-500 h-full rounded-full' : (perclos >= 15 ? 'bg-amber-500 h-full rounded-full' : 'bg-emerald-500 h-full rounded-full');
+    }
+
+    // Procedural Stylized Face Mesh Drawing
+    function drawFace() {
+      ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+      mCtx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+
+      if (currentState === 'facelost') {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CAMERA IR: KHÔNG TÌM THẤY MẶT', faceCanvas.width / 2, faceCanvas.height / 2);
+        return;
+      }
+
+      // Drawing to both Cabin HUD canvas and Snapshot modal canvas
+      [ctx, mCtx].forEach((c, idx) => {
+        const cx = (idx === 0 ? faceCanvas.width : modalCanvas.width) / 2;
+        const cy = (idx === 0 ? faceCanvas.height : modalCanvas.height) / 2 + (pitch < -15 ? 25 : 0);
+
+        // Head Contour (Mesh Wireframe)
+        c.strokeStyle = currentState === 'microsleep' ? '#ef4444' : (currentState === 'fatigue' ? '#f59e0b' : '#10b981');
+        c.lineWidth = 1.5;
+        c.beginPath();
+        c.ellipse(cx, cy, 55, 75, 0, 0, Math.PI * 2);
+        c.stroke();
+
+        // Eyes (Height depends on EAR)
+        const eyeH = Math.max(2, ear * 40);
+        c.fillStyle = currentState === 'microsleep' ? '#ef4444' : '#38bdf8';
+        
+        // Left eye
+        c.beginPath();
+        c.ellipse(cx - 24, cy - 15, 14, eyeH, 0, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Right eye
+        c.beginPath();
+        c.ellipse(cx + 24, cy - 15, 14, eyeH, 0, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Mouth (Height depends on MAR)
+        const mouthH = Math.max(4, mar * 30);
+        c.beginPath();
+        c.ellipse(cx, cy + 35, 20, mouthH, 0, 0, Math.PI * 2);
+        c.stroke();
+
+        // Landmarks Points Dots
+        c.fillStyle = '#ffffff';
+        [[-24, -15], [24, -15], [0, 5], [-12, 35], [12, 35], [0, -45], [0, 65]].forEach(([dx, dy]) => {
+          c.beginPath();
+          c.arc(cx + dx, cy + dy, 2, 0, Math.PI * 2);
+          c.fill();
+        });
+      });
+    }
+
+    function dismissBanner() {
+      document.getElementById('restStopBanner').classList.add('hidden');
+    }
+
+    function updateFleetOnCritical() {
+      document.getElementById('statCritCount').innerText = '03';
+      const cell = document.getElementById('tblStatusCell');
+      cell.innerHTML = '<span class="px-2.5 py-1 rounded-full bg-red-950 text-red-400 border border-red-800 font-bold text-[11px] animate-pulse">NGỦ GẬT 1.8s</span>';
+      document.getElementById('tblMetricsCell').className = 'p-3.5 font-mono text-red-400 font-bold';
+      document.getElementById('tblMetricsCell').innerText = '0.05 / 32.0%';
+    }
+
+    // Modal Handlers
+    function showSnapshotModal(plate, driver, type, earVal, perclosVal) {
+      document.getElementById('mPlate').innerText = plate;
+      document.getElementById('mDriver').innerText = driver;
+      document.getElementById('mEar').innerText = earVal;
+      document.getElementById('mPerclos').innerText = perclosVal + '%';
+      document.getElementById('snapshotModal').classList.remove('hidden');
+      drawFace();
+    }
+
+    function closeSnapshotModal() {
+      document.getElementById('snapshotModal').classList.add('hidden');
+    }
+
+    // Initial boot
+    drawFace();
+  </script>
+</body>
+</html>
