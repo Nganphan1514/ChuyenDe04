@@ -1,48 +1,36 @@
 # SleepAlert AI Design Review & Ergonomic Assessment Report
 
 > **Provenance**
-> - **Source prompt:** [P4.4 — AI Design Review](../prompts/review-design.prompt.md)
-> - **Artifact status:** `Accepted reviewed sample`
-> - **Human action:** Evaluated critique findings, prioritized ergonomic fixes, and confirmed automotive safety standards.
-> - **Reproduction note:** Structured heuristic review conducted prior to code implementation.
+> - **Source prompt:** [P4.4 -- AI Design Review](../prompts/review-design.prompt.md)
+> - **Artifact status:** Accepted reviewed sample
+> - **Human action:** Evaluated critique findings, prioritized ergonomic fixes, and confirmed automotive safety and fleet management standards.
+> - **Reproduction note:** Structured heuristic review conducted prior to code implementation and synced with DACN1 architecture.
 
 ---
 
-## 1. Phương pháp Đánh giá & Tiêu chuẩn So chiếu
+## 1. Phuong phap Danh gia va Tieu chuan So chieu
 
-Đội ngũ phát triển đã sử dụng các tiêu chuẩn quốc tế về công thái học buồng lái phương tiện giao thông để thực hiện phiên thẩm tra AI Design Review:
-* **NHTSA Visual-Manual Driver Distraction Guidelines:** Quy định tài xế không được rời mắt khỏi mặt đường quá 2.0 giây cho một tác vụ, và mỗi lần liếc nhìn không quá 1.0 giây.
-* **ISO 15008:** Yêu cầu về độ tương phản, kích thước ký tự và góc nhìn của màn hình hiển thị trong xe cơ giới ban ngày lẫn ban đêm.
-* **WCAG 2.1 AAA:** Độ tương phản màu sắc cho các trạng thái nguy hiểm tối thiểu đạt tỷ lệ 7:1.
-
----
-
-## 2. Bảng Thẩm định Chi tiết (Findings & Prioritized Actions)
-
-```text
-┌────┬──────────────┬──────────┬─────────────────────────────────────┬─────────────────────────────────────┬────────────────────────────────────┐
-│ ID │ Lĩnh vực     │ Mức độ   │ Vấn đề nhận diện                    │ Cơ sở công thái học                 │ Hành động khắc phục đã áp dụng     │
-├────┼──────────────┼──────────┼─────────────────────────────────────┼─────────────────────────────────────┼────────────────────────────────────┤
-│ F1 │ Glanceability│ CRITICAL │ Ban đầu biểu đồ PERCLOS hiển thị    │ Đọc biểu đồ đường tốn > 2.5 giây,   │ Chuyển thành thanh Bar màu lớn     │
-│    │              │          │ dạng đồ thị sóng dao động phức tạp. │ gây xao nhãng nguy hiểm khi lái xe. │ kết hợp chữ số to đoản mạch.       │
-├────┼──────────────┼──────────┼─────────────────────────────────────┼─────────────────────────────────────┼────────────────────────────────────┤
-│ F2 │ Night-Vision │ HIGH     │ Nền xám nhạt ở bản nháp đầu tiên    │ Ánh sáng nền làm co đồng tử mắt tài │ Đổi toàn bộ sang nền True Black    │
-│    │              │          │ gây chói trong cabin tối đêm.       │ xế, giảm tầm nhìn bóng tối ngoài xe.│ (#0B0F19), giảm độ sáng màn hình.  │
-├────┼──────────────┼──────────┼─────────────────────────────────────┼─────────────────────────────────────┼────────────────────────────────────┤
-│ F3 │ Audio Bias   │ HIGH     │ Chỉ dựa vào pop-up hình ảnh khi     │ Khi ngủ gật, mắt tài xế đang nhắm,  │ Kích hoạt còi hú tức thì (< 500ms),│
-│    │              │          │ xảy ra vi giấc ngủ (microsleep).    │ không thể nhìn thấy bất kỳ modal nào│ hình ảnh chỉ đóng vai trò thứ cấp. │
-├────┼──────────────┼──────────┼─────────────────────────────────────┼─────────────────────────────────────┼────────────────────────────────────┤
-│ F4 │ Cognitive    │ MEDIUM   │ Thông báo trạm dừng chân hiện chữ   │ Tài xế đang mệt mỏi không thể đọc   │ Dùng Text-to-Speech đọc to địa điểm│
-│    │ Load         │          │ quá dài và địa chỉ nhiều dòng.      │ văn bản dài trên màn hình.          │ và chỉ hiện icon trạm + số km.     │
-├────┼──────────────┼──────────┼─────────────────────────────────────┼─────────────────────────────────────┼────────────────────────────────────┤
-│ F5 │ Fleet Triage │ MEDIUM   │ Dashboard đội xe xếp theo thứ tự ID │ Điều hành viên khó phát hiện xe nào │ Tự động ghim các xe đang ở trạng   │
-│    │              │          │ xe tĩnh, không ưu tiên xe nguy hiểm.│ đang có báo động đỏ trong 30 xe.    │ thái BÁO ĐỘNG ĐỎ lên đầu bảng.     │
-└────┴──────────────┴──────────┴─────────────────────────────────────┴─────────────────────────────────────┴────────────────────────────────────┘
-```
+Doi ngu phat trien da su dung cac tieu chuan quoc te ve cong thai hoc phuong tien giao thong va quan ly doi xe de tham dinh:
+- **NHTSA Visual-Manual Driver Distraction Guidelines:** Quy dinh tai xe khong duoc roi mat khoi mat duong qua 2.0 giay cho mot tac vu, va moi lan liec nhin khong qua 1.0 giay.
+- **ISO 15008:** Yeu cau ve do tuong phan, kich thuoc ky tu va goc nhin cua man hinh hien thi trong xe co gioi ban ngay lan ban dem.
+- **WCAG 2.1 AAA:** Do tuong phan mau sac cho cac trang thai nguy hiem toi thieu dat ty le 7:1.
 
 ---
 
-## 3. Kết luận của Phiên Review
+## 2. Bang Tham dinh Chi tiet (Findings & Prioritized Actions)
 
-1. **Phê duyệt Bản mẫu:** Giao diện buồng lái (HUD) và Bảng điều khiển Đội xe đã giải quyết triệt để các rủi ro gây mất tập trung, tuân thủ nghiêm ngặt quy tắc quan sát dưới 1 giây.
-2. **Ủy quyền Triển khai:** Thiết kế này đã sẵn sàng để tích hợp vào bản mẫu tương tác thực tế (`prototype/index.html`) và chuẩn bị cho Chapter 5 (Thiết kế Kiến trúc Phần mềm).
+| ID | Linh vuc | Muc do | Van de nhan dien tu DACN1 goc | Co so cong thai hoc | Hanh dong khac phuc da ap dung |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **F1** | Glanceability | CRITICAL | DACN1 goc chi co bang HTML admin, chua co HUD ban dem toi uu cho tai xe. | Doc bang so lieu ton > 3s gay xao nhang nghiem trong khi lai xe. | Thiet ke HUD chuyen biet voi 3 trang thai mau toan man hinh (Normal, Warn, Danger Strobe) va chu so lon. |
+| **F2** | Night-Vision | HIGH | Giao dien sang mau gay choi mat ban dem. | Anh sang nen lam co dong tu mat tai xe, giam tam nhin ngoai xe. | Doi sang nen True Black (#090D16), hap thu anh sang thua, bao ve thi luc ban dem. |
+| **F3** | Audio Bias | HIGH | Chi bao dong tren man hinh khi ngu gat. | Khi ngu gat mat dang nham, khong the doc man hinh. | Tich hop Web Audio API phat coi hu Sawtooth 850-1150Hz tuc thi (< 500ms) kem Voice tieng Viet. |
+| **F4** | Driver Auth | HIGH | Chua truc quan hoa viec doi soat nguoi lai hop le tren xe. | Nguy co tai xe khong du dieu kien hoac chua gan ca tu y dieu khien xe. | Bo sung the xac thuc khuon mat FaceID ngay tren thanh Header buong lai va canh bao tai xe la. |
+| **F5** | Mobile Usability | MEDIUM | Dang ky khuon mat chua co huong dan truc quan. | Nguoi dung boi roi khong biet da quet du goc khuon mat hay chua. | Thiet ke Mobile Face Register voi vong oval cong nghe, hieu ung laser quet va chi bao mau (1/3, 2/3, 3/3). |
+| **F6** | Fleet Triage | MEDIUM | Bang danh sach xe khong lam noi bat xe dang ngu gat. | Quan ly doi xe kho phat hien kip thoi xe dang gap nan giua hang chuc xe. | Tu dong phan loai va ghim xe BAO DONG DO len dau bang, kem nut mo Snapshot bang chung tuc thi. |
+
+---
+
+## 3. Ket luan cua Phien Review
+
+1. **Phe duyet He sinh thai Toan dien:** Ca 3 khong gian trai nghiem (In-Cabin Cockpit, Central Fleet Management Portal, Driver Mobile App) dap ung day du yeu cau hoc phan va ke thua tron ven suc manh tu DACN1.
+2. **San sang Trien khai:** Ban mau tuong tac (prototype/index.html) hoat dong muot ma va hoan toan doc lap, san sang buoc sang Chapter 5 (Thiet ke Kien truc Phan mem).
